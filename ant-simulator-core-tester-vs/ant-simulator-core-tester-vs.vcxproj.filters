@@ -21,22 +21,19 @@
     <ClCompile Include="..\src\tester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cpp-lib\arr2d.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cpp-lib\pgm8.cpp">
+    <ClCompile Include="..\src\cpp-lib\impl\pgm8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ant-simulator-core.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\cpp-lib\arr2d.hpp">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\src\cpp-lib\includes\arr2d.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\cpp-lib\pgm8.hpp">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\src\cpp-lib\includes\pgm8.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

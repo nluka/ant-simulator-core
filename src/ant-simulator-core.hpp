@@ -5,9 +5,9 @@
 #include <vector>
 #include <array>
 
-namespace asc { // asc = ant simulator core
+namespace asc { // stands for `ant simulator core`
 
-//      AO = ant orientation
+//      AO stands for `ant orientation`
 #define AO_OVERFLOW_COUNTER_CLOCKWISE static_cast<int_fast8_t>(-1)
 #define AO_NORTH                      static_cast<int_fast8_t>( 0)
 #define AO_EAST                       static_cast<int_fast8_t>( 1)
@@ -15,7 +15,7 @@ namespace asc { // asc = ant simulator core
 #define AO_WEST                       static_cast<int_fast8_t>( 3)
 #define AO_OVERFLOW_CLOCKWISE         static_cast<int_fast8_t>( 4)
 
-//      TD = turn direction
+//      TD stands for `turn direction`
 #define TD_LEFT   static_cast<int_fast8_t>(-1)
 #define TD_NONE   static_cast<int_fast8_t>( 0)
 #define TD_RIGHT  static_cast<int_fast8_t>( 1)
@@ -29,12 +29,12 @@ enum class StepResult {
 char const *step_result_to_string(StepResult res);
 
 struct Rule {
-  bool        m_isDefined;
+  bool        m_isDefined; // false if rule is not in use
   uint8_t     m_replacementColor;
   int_fast8_t m_turnDirection;
 
   Rule();
-  Rule(bool isDefined, uint8_t replacementColor, int_fast8_t turnDirection);
+  Rule(uint8_t replacementColor, int_fast8_t turnDirection);
 };
 
 class Simulation {
@@ -45,12 +45,14 @@ private:
   uint_fast64_t           m_iterationsCompleted = 0;
   StepResult              m_mostRecentStepResult = StepResult::NIL;
   uint_fast16_t           m_gridWidth, m_gridHeight;
-  // would like to use fast variant here, but this may increase the memory
-  // requirement for this vector by several factors which is unacceptable
-  std::vector<uint8_t>    m_grid;
+  // would like to use uint_fast8_t here, but this may increase the memory
+  // requirement for this grid by several factors which is unacceptable.
+  // would also like to use vector, but I need to control EXACTLY how much
+  // memory to allocate upfront - vector does not give me this control.
+  uint8_t *               m_grid;
   uint_fast16_t           m_antCol, m_antRow;
   int_fast8_t             m_antOrientation;
-  // acts like a hash table, as there are 256 colors so we can use the 8-bit
+  // acts like a hash table, there are 256 colors so we can use the 8-bit
   // color values as indices for their rules
   // i.e rule for color value N is m_rules[N] where (0 <= N <= 255)
   std::array<Rule, 256>   m_rules;
@@ -68,10 +70,10 @@ public:
     int_fast8_t                   antOrientation,
     std::array<Rule, 256> const   rules
   );
-  bool is_finished();
+  bool is_finished() const;
   void step_once();
-  StepResult last_step_result();
-  std::vector<uint8_t> const &grid();
+  StepResult last_step_result() const;
+  uint8_t const *grid() const;
 };
 
 } // namespace asc

@@ -1,32 +1,111 @@
-#include <iostream>
-#include "ant-simulator-core.hpp"
-#include "cpp-lib/pgm8.hpp"
+#define _CRT_SECURE_NO_WARNINGS
 
-int main(int const argc, char const *const *const argv) {
-  if (argc != 2) {
-    std::cout << "usage: <pgm_pathname>\n";
+#include <iostream>
+#include <cstring>
+#include "ant-simulator-core.hpp"
+#include "cpp-lib/includes/arr2d.hpp"
+#include "cpp-lib/includes/pgm8.hpp"
+
+int main(int const argc, char *const *const argv) {
+  if (argc < 9) {
+    std::cout << "usage: "
+      "<pgm_pathname> "
+      "<max_iters> "
+      "<grid_width> "
+      "<grid_height> "
+      "<grid_color> "
+      "<ant_col> "
+      "<ant_row> "
+      "<ant_orient> "
+      "[rule_color,rule_replacementcolor,rule_turndir]+\n";
     return 1;
   }
 
+  uint_fast64_t maxIterations;
+  uint_fast16_t gridWidth, gridHeight, antCol, antRow;
+  uint8_t gridColor;
+  int_fast8_t antOrientation;
   std::array<asc::Rule, 256> rules{};
-  rules[0] = asc::Rule(true, 1, TD_LEFT);
-  rules[1] = asc::Rule(true, 0, TD_RIGHT);
-  uint16_t const gridWidth = 75, gridHeight = 75;
+
+  #define PARSE_ARG(argName, var, parser, cliVal)     \
+  try {                                               \
+    var = static_cast<decltype(var)>(parser(cliVal)); \
+  } catch (...) {                                     \
+    std::cerr << "ERROR: failed to parse <"           \
+      << argName << "> value\n";                      \
+    return 2;                                         \
+  }
+
+  PARSE_ARG("max_iters",   maxIterations,  std::stoull, argv[2]);
+  PARSE_ARG("grid_width",  gridWidth,      std::stoul,  argv[3]);
+  PARSE_ARG("grid_height", gridHeight,     std::stoul,  argv[4]);
+  PARSE_ARG("grid_color",  gridColor,      std::stoul,  argv[5]);
+  PARSE_ARG("ant_col",     antCol,         std::stoul,  argv[6]);
+  PARSE_ARG("ant_row",     antRow,         std::stoul,  argv[7]);
+  PARSE_ARG("ant_orient",  antOrientation, std::stoi,   argv[8]);
+
+  #undef PARSE_ARG
+
+  // parse rules
+  for (int i = 9, ruleNum = 1; i < argc; ++i, ++ruleNum) {
+    char const
+      *const delim = ",",
+      *const color = strtok(argv[i], delim),
+      *const replacementColor = strtok(NULL, delim),
+      *const turnDir = strtok(NULL, delim);
+
+    uint8_t parsedColor, parsedReplacementColor;
+
+    #define PARSE_RULE_PART(partName, var, parser, cliVal) \
+    try {                                                  \
+      var = static_cast<decltype(var)>(parser(cliVal));    \
+    } catch (...) {                                        \
+      std::cerr << "ERROR: failed to parse <"              \
+        << partName << "> for rule " << ruleNum << '\n';   \
+      exit(3);                                             \
+    }
+
+    PARSE_RULE_PART("rule_color",            parsedColor,            std::stoul, color)
+    PARSE_RULE_PART("rule_replacementcolor", parsedReplacementColor, std::stoul, replacementColor)
+
+    #undef PARSE_RULE_PART
+
+    // parse rule_turndir
+    int_fast8_t const parsedTurnDir = ([turnDir, &parsedTurnDir, ruleNum](){
+      switch (turnDir[0]) {
+        case 'l':
+        case 'L':
+          return TD_LEFT;
+        case 'n':
+        case 'N':
+          return TD_NONE;
+        case 'r':
+        case 'R':
+          return TD_RIGHT;
+        default:
+          std::cerr << "ERROR: failed to parse <rule_turndir> for rule "
+            << ruleNum << '\n';
+          exit(3);
+      }
+    })();
+
+    rules[parsedColor] = asc::Rule(parsedReplacementColor, parsedTurnDir);
+  }
 
   asc::Simulation sim(
-    gridWidth, gridHeight, 1,
-    gridWidth / 2, gridHeight / 2, AO_WEST,
+    gridWidth, gridHeight, gridColor,
+    antCol, antRow, antOrientation,
     rules
   );
 
   std::cout << "running simulation... ";
   try {
-    for (size_t i = 0; i < 1000000 && !sim.is_finished(); ++i) {
+    for (size_t i = 0; i < maxIterations && !sim.is_finished(); ++i) {
       sim.step_once();
     }
   } catch (...) {
     std::cerr << "failed\n";
-    return 2;
+    return 4;
   }
   std::cout << "done\n";
 
@@ -42,17 +121,19 @@ int main(int const argc, char const *const *const argv) {
     std::ofstream pgm(argv[1]);
     if (!pgm.is_open()) {
       std::cerr << "failed\n";
-      return 3;
+      return 5;
     }
     try {
-      pgm8::write_bin(
+      pgm8::write_ascii(
         &pgm,
-        gridWidth, gridHeight, 1,
-        reinterpret_cast<unsigned char const *>(sim.grid().data())
+        static_cast<uint16_t>(gridWidth),
+        static_cast<uint16_t>(gridHeight),
+        arr2d::max<uint8_t>(sim.grid(), gridWidth, gridHeight),
+        sim.grid()
       );
     } catch (...) {
       std::cerr << "failed\n";
-      return 4;
+      return 6;
     }
   }
   std::cout << "done\n";
