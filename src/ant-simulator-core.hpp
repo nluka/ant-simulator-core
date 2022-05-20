@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ANT_SIMULATOR_CORE_HPP
+#define ANT_SIMULATOR_CORE_HPP
 
 #include <string>
 #include <cinttypes>
@@ -38,7 +39,7 @@ struct Rule {
 };
 
 class Simulation {
-private:
+protected:
   // we use fast int types when possible because arithmetic on these values
   // needs to be as fast as possible as it may be repeated
   // millions to trillions of times
@@ -77,3 +78,5 @@ public:
 };
 
 } // namespace asc
+
+#endif // ANT_SIMULATOR_CORE_HPP
