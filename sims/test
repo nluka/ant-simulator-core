@@ -1,0 +1,13 @@
+simulationName = LR;
+startingIteration = 0;
+maxIterations = 11000;
+gridWidth = 81;
+gridHeight = 81;
+gridColor = 1;
+antCol = 40;
+antRow = 40;
+antOrientation = W;
+rules = [
+  {0,1,L},
+  {1,0,R}
+];
