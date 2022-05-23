@@ -1,8 +1,5 @@
 #include <sstream>
 #include <algorithm>
-#include <regex>
-#include <iostream>
-#include <vector>
 #include "ant-simulator-core.hpp"
 
 using asc::Simulation, asc::Rule, asc::StepResult;
@@ -22,7 +19,6 @@ Rule::Rule(
   uint8_t const replacementColor,
   int_fast8_t const turnDirection
 ) :
-  m_isDefined{true},
   m_replacementColor{replacementColor},
   m_turnDirection{turnDirection}
 {}
@@ -32,52 +28,6 @@ bool Simulation::is_col_in_grid_bounds(int const col) {
 }
 bool Simulation::is_row_in_grid_bounds(int const row) {
   return row >= 0 && row < static_cast<int>(m_gridHeight - 1);
-}
-
-void Simulation::parse(std::string const &text) {
-  // matches reduntant chars
-  std::regex const exp("[^a-zA-Z0-9=[\\]{},;]");
-
-  std::ptrdiff_t const redundantCharCount(
-    std::distance(
-      std::sregex_iterator(text.begin(), text.end(), exp),
-      std::sregex_iterator()
-    )
-  );
-
-  std::vector<size_t> reduntantCharPositions{};
-  // we know how many reduntant chars there are so allocate enough memory for
-  // all of them immediately to avoid unnecessary resizing
-  reduntantCharPositions.reserve(redundantCharCount);
-  for ( // loop through each redundant char and save its position
-    auto it = std::sregex_iterator(text.begin(), text.end(), exp);
-    it != std::sregex_iterator();
-    ++it
-  ) {
-    reduntantCharPositions.push_back(it->position());
-    // std::cout << it->position() << " [" << it->str() << "]\n";
-  }
-  // reverse positions so that the position of the first redundant char is at
-  // the back, allowing us to pop them off like a stack
-  std::reverse(reduntantCharPositions.begin(), reduntantCharPositions.end());
-
-  // same as `text` without any redundant chars
-  std::string filteredText(text.length() - redundantCharCount, '\0');
-  // copy `text` to `filteredText`, but skip redundant chars
-  for (size_t pos = 0; pos < text.length(); ++pos) {
-    if (
-      !reduntantCharPositions.empty() && // check needed to avoid UB with .back
-      pos == reduntantCharPositions.back()
-    ) {
-      // char is reduntant, don't add it to filtered result
-      reduntantCharPositions.pop_back();
-    } else {
-      // char is not reduntant, add it to filtered result
-      filteredText += text[pos];
-    }
-  }
-
-  std::cout << filteredText << std::endl;
 }
 
 Simulation::Simulation(
