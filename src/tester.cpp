@@ -92,11 +92,17 @@ int main(int const argc, char *const *const argv) {
     rules[parsedColor] = asc::Rule(parsedReplacementColor, parsedTurnDir);
   }
 
-  asc::Simulation sim(
-    gridWidth, gridHeight, gridColor,
-    antCol, antRow, antOrientation,
-    rules
-  );
+  asc::Simulation sim;
+  try {
+    sim = asc::Simulation(
+      gridWidth, gridHeight, gridColor,
+      antCol, antRow, antOrientation,
+      rules
+    );
+  } catch (std::string const &err) {
+    std::cerr << "ERROR: " << err << '\n';
+    return 4;
+  }
 
   std::cout << "running simulation... ";
   try {
@@ -105,7 +111,7 @@ int main(int const argc, char *const *const argv) {
     }
   } catch (...) {
     std::cerr << "failed\n";
-    return 4;
+    return 5;
   }
   std::cout << "done\n";
 
@@ -121,7 +127,7 @@ int main(int const argc, char *const *const argv) {
     std::ofstream pgm(argv[1]);
     if (!pgm.is_open()) {
       std::cerr << "failed\n";
-      return 5;
+      return 6;
     }
     try {
       pgm8::write_ascii(

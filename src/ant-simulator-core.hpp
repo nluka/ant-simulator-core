@@ -62,6 +62,7 @@ protected:
   bool is_row_in_grid_bounds(int row);
 
 public:
+  Simulation();
   Simulation(
     uint_fast16_t                 gridWidth,
     uint_fast16_t                 gridHeight,

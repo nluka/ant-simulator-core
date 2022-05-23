@@ -13,7 +13,11 @@ char const *asc::step_result_to_string(StepResult const res) {
   }
 }
 
-Rule::Rule() : m_isDefined{false}, m_replacementColor{}, m_turnDirection{} {}
+Rule::Rule()
+: m_isDefined{false},
+  m_replacementColor{},
+  m_turnDirection{}
+{}
 
 Rule::Rule(
   uint8_t const replacementColor,
@@ -29,6 +33,16 @@ bool Simulation::is_col_in_grid_bounds(int const col) {
 bool Simulation::is_row_in_grid_bounds(int const row) {
   return row >= 0 && row < static_cast<int>(m_gridHeight - 1);
 }
+
+Simulation::Simulation()
+: m_gridWidth{0},
+  m_gridHeight{0},
+  m_grid{nullptr},
+  m_antCol{0},
+  m_antRow{0},
+  m_antOrientation{},
+  m_rules{}
+{}
 
 Simulation::Simulation(
   uint_fast16_t const          gridWidth,
@@ -56,9 +70,9 @@ Simulation::Simulation(
     ss << "gridHeight (" << gridHeight << ") not in range [1, " << UINT16_MAX << "]";
   // validate ant starting coords
   else if (!is_col_in_grid_bounds(antStartingCol))
-    ss << "antStartingCol (" << gridHeight << ") not on grid";
+    ss << "antStartingCol (" << antStartingCol << ") not on grid";
   else if (!is_row_in_grid_bounds(antStartingRow))
-    ss << "antStartingRow (" << gridHeight << ") not on grid";
+    ss << "antStartingRow (" << antStartingRow << ") not on grid";
 
   std::string const err = ss.str();
   if (!err.empty()) {
